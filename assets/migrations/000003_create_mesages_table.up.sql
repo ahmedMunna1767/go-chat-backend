@@ -1,0 +1,7 @@
+CREATE TABLE messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender_id UUID NOT NULL,
+    receiver_id UUID NOT NULL,
+    payload TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

@@ -2,13 +2,13 @@ package main
 
 import (
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/ahmedMunna/go-chat-backend/internal/password"
 	"github.com/ahmedMunna/go-chat-backend/internal/request"
 	"github.com/ahmedMunna/go-chat-backend/internal/response"
 	"github.com/ahmedMunna/go-chat-backend/internal/validator"
+	"github.com/google/uuid"
 
 	"github.com/pascaldekloe/jwt"
 )
@@ -65,13 +65,22 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = app.db.InsertUser(input.Name, input.Email, hashedPassword)
+	userID := uuid.Must(uuid.NewRandom())
+	err = app.db.InsertUser(userID, input.Name, input.Email, hashedPassword)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	data := map[string]string{
+		"user_id": userID.String(),
+		"message": "User created successfully",
+	}
+
+	err = response.JSON(w, http.StatusCreated, data)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
 }
 
 func (app *application) createAuthenticationToken(w http.ResponseWriter, r *http.Request) {
@@ -97,7 +106,7 @@ func (app *application) createAuthenticationToken(w http.ResponseWriter, r *http
 	input.Validator.CheckField(user != nil, "Email", "Email address could not be found")
 
 	if user != nil {
-		passwordMatches, err := password.Matches(input.Password, user.HashedPassword)
+		passwordMatches, err := password.Matches(input.Password, user.PasswordHash)
 		if err != nil {
 			app.serverError(w, r, err)
 			return
@@ -113,7 +122,7 @@ func (app *application) createAuthenticationToken(w http.ResponseWriter, r *http
 	}
 
 	var claims jwt.Claims
-	claims.Subject = strconv.Itoa(user.ID)
+	claims.Subject = user.ID.String()
 
 	expiry := time.Now().Add(24 * time.Hour)
 	claims.Issued = jwt.NewNumericTime(time.Now())

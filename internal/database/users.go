@@ -10,18 +10,18 @@ import (
 )
 
 type User struct {
-	ID             uuid.UUID `db:"id"`
-	Name           string    `db:"name"`
-	Email          string    `db:"email"`
-	HashedPassword string    `db:"hashed_password"`
-	CreatedAt      time.Time `db:"created_at"`
+	ID           uuid.UUID `db:"id"`
+	Name         string    `db:"name"`
+	Email        string    `db:"email"`
+	PasswordHash string    `db:"password_hash"`
+	CreatedAt    string    `db:"created_at"`
 }
 
 func (db *DB) InsertUser(id uuid.UUID, name, email, hashedPassword string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 	query := `
-		INSERT INTO users (id, created_at, name, email, hashed_password)
+		INSERT INTO users (id, created_at, name, email, password_hash)
 		VALUES ($1, $2, $3, $4, $5)`
 
 	_, err := db.ExecContext(ctx, query, id, time.Now(), name, email, hashedPassword)
@@ -64,7 +64,7 @@ func (db *DB) UpdateUserHashedPassword(id uuid.UUID, hashedPassword string) erro
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
-	query := `UPDATE users SET hashed_password = $1 WHERE id = $2`
+	query := `UPDATE users SET password_hash = $1 WHERE id = $2`
 
 	_, err := db.ExecContext(ctx, query, hashedPassword, id)
 	return err

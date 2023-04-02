@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/pascaldekloe/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -58,7 +58,7 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 					return
 				}
 
-				userID, err := strconv.Atoi(claims.Subject)
+				userID, err := uuid.ParseBytes([]byte(claims.Subject))
 				if err != nil {
 					app.serverError(w, r, err)
 					return
