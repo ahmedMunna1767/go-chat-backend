@@ -5,37 +5,30 @@ import (
 	"database/sql"
 	"errors"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type User struct {
-	ID             int       `db:"id"`
-	Created        time.Time `db:"created"`
+	ID             uuid.UUID `db:"id"`
+	Name           string    `db:"name"`
 	Email          string    `db:"email"`
 	HashedPassword string    `db:"hashed_password"`
+	CreatedAt      time.Time `db:"created_at"`
 }
 
-func (db *DB) InsertUser(email, hashedPassword string) (int, error) {
+func (db *DB) InsertUser(id uuid.UUID, name, email, hashedPassword string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
-
 	query := `
-		INSERT INTO users (created, email, hashed_password)
-		VALUES ($1, $2, $3)`
+		INSERT INTO users (id, created_at, name, email, hashed_password)
+		VALUES ($1, $2, $3, $4, $5)`
 
-	result, err := db.ExecContext(ctx, query, time.Now(), email, hashedPassword)
-	if err != nil {
-		return 0, err
-	}
-
-	id, err := result.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-
-	return int(id), err
+	_, err := db.ExecContext(ctx, query, id, time.Now(), name, email, hashedPassword)
+	return err
 }
 
-func (db *DB) GetUser(id int) (*User, error) {
+func (db *DB) GetUser(id uuid.UUID) (*User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
@@ -67,7 +60,7 @@ func (db *DB) GetUserByEmail(email string) (*User, error) {
 	return &user, err
 }
 
-func (db *DB) UpdateUserHashedPassword(id int, hashedPassword string) error {
+func (db *DB) UpdateUserHashedPassword(id uuid.UUID, hashedPassword string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 

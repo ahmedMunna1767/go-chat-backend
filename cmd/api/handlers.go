@@ -26,6 +26,7 @@ func (app *application) status(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 	var input struct {
+		Name      string              `json:"Name"`
 		Email     string              `json:"Email"`
 		Password  string              `json:"Password"`
 		Validator validator.Validator `json:"-"`
@@ -43,6 +44,7 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	input.Validator.CheckField(input.Name != "", "Name", "Name is required")
 	input.Validator.CheckField(input.Email != "", "Email", "Email is required")
 	input.Validator.CheckField(validator.Matches(input.Email, validator.RgxEmail), "Email", "Must be a valid email address")
 	input.Validator.CheckField(existingUser == nil, "Email", "Email is already in use")
@@ -63,7 +65,7 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = app.db.InsertUser(input.Email, hashedPassword)
+	_, err = app.db.InsertUser(input.Name, input.Email, hashedPassword)
 	if err != nil {
 		app.serverError(w, r, err)
 		return
@@ -139,5 +141,13 @@ func (app *application) createAuthenticationToken(w http.ResponseWriter, r *http
 }
 
 func (app *application) protected(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("This is a protected handler"))
+
+	data := map[string]string{
+		"message": "this is a protected route",
+	}
+
+	err := response.JSON(w, http.StatusOK, data)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
 }

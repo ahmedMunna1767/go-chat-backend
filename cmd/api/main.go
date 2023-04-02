@@ -52,7 +52,7 @@ func run(logger *leveledlog.Logger) error {
 	cfg.baseURL = env.GetString("BASE_URL", "http://localhost:4444")
 	cfg.httpPort = env.GetInt("HTTP_PORT", 4444)
 	cfg.basicAuth.username = env.GetString("BASIC_AUTH_USERNAME", "admin")
-	cfg.basicAuth.hashedPassword = env.GetString("BASIC_AUTH_HASHED_PASSWORD", "$2a$10$jRb2qniNcoCyQM23T59RfeEQUbgdAXfR6S0scynmKfJa5Gj3arGJa")
+	cfg.basicAuth.hashedPassword = env.GetString("BASIC_AUTH_HASHED_PASSWORD", "$2a$12$zA3MFBmA3/GZ41zVwdZ6rO69MddCuVsFJIbheCpQs4.rq3lk7Zds6")
 	cfg.db.dsn = env.GetString("DB_DSN", "db.sqlite")
 	cfg.db.automigrate = env.GetBool("DB_AUTOMIGRATE", true)
 	cfg.jwt.secretKey = env.GetString("JWT_SECRET_KEY", "jvxgmcwezhq62f4mgqnmwr24ndpwediw")
